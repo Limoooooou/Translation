@@ -6,7 +6,9 @@
 
 1.主页兼文本翻译页
 
-![主页兼文本翻译页](pics/text_translate_UI_image.png)
+<div align = "center">
+    <img src="pics/text_translate_UI_image.png" width="22%" />
+</div>
 
 2.OCR翻译页
 
@@ -141,5 +143,3 @@
 2.支持用户播放语音和复制译文。
 
 3.翻译进行时显示进度信息，以免误导用户。
-
-<img src="language_select_UI_image.png" alt="翻译语言选择界面" width="400" />
