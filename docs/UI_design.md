@@ -123,7 +123,7 @@
 
 显示翻译记录。
 
-![翻译记录页](pics/record_UI_image.png)
+![翻译记录页](pics/record_UI_image.png =60%*80%)
 
 #### **交互场景**
 
