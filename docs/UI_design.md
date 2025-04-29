@@ -123,7 +123,7 @@
 
 显示翻译记录。
 
-![翻译记录页](pics/record_UI_image.png =60%*80%)
+![翻译记录页](pics/record_UI_image.png)
 
 #### **交互场景**
 
@@ -141,3 +141,5 @@
 2.支持用户播放语音和复制译文。
 
 3.翻译进行时显示进度信息，以免误导用户。
+
+<img src="language_select_UI_image.png" alt="翻译语言选择界面" width="400" />
