@@ -12,23 +12,33 @@
 
 2.OCR翻译页
 
-![OCR翻译页](pics/OCR_translate_UI_image.png)
+<div align="center">
+    <img src="pics/OCR_translate_UI_image.png" width="22%"/>
+</div>
 
 3.OCR翻译结果示例页
 
-![OCR翻译结果页](pics/OCR_translate_result_UI_image.png)
+<div align="center">
+    <img src="pics/OCR_translate_result_UI_image.png" width="22%">
+</div>
 
 4.语音翻译页
 
-![语音翻译页](pics/speech_translate_UI_image.png)
+<div align="center">
+    <img src="pics/speech_translate_UI_image.png" width="22%">
+</div>
 
 5.翻译记录页
 
-![翻译记录页](pics/record_UI_image.png)
+<div align="center">
+    <img src="pics/record_UI_image.png" width="22%">
+</div>
 
 6.翻译语言选择页
 
-![翻译语言选择页](pics/language_select_UI_image.png)
+<div align="center">
+    <img src="pics/language_select_UI_image.png" width="22%">
+</div>
 
 
 ### **1.主页兼文本翻译页**
@@ -37,7 +47,10 @@
 
 主页是APP的初始界面，导航栏显示主要信息和主要功能模块，包括文本翻译按钮、OCR翻译按钮、语音翻译按钮和翻译记录按钮.
 
-![主页兼文本翻译页](pics/text_translate_UI_image.png)
+<div align = "center">
+    <img src="pics/text_translate_UI_image.png" width="22%" />
+</div>
+
 
 #### **交互场景**
 
@@ -58,7 +71,9 @@
 
 在语言选择页用户可以选择输入的语言和输出的语言。
 
-![翻译语言选择页](pics/language_select_UI_image.png)
+<div align="center">
+    <img src="pics/language_select_UI_image.png" width="22%">
+</div>
 
 #### **交互场景**
 
@@ -73,7 +88,9 @@
 
 在OCR翻译页可以选择输入和输出的语言，按下拍照按钮进行翻译。
 
-![OCR翻译页](pics/OCR_translate_UI_image.png)
+<div align="center">
+    <img src="pics/OCR_translate_UI_image.png" width="22%"/>
+</div>
 
 #### **交互场景**
 
@@ -83,13 +100,17 @@
 
 3.用户点击下方导航栏某一按钮跳转到相应功能界面。
 
+
+
 ### **4.OCR翻译结果页**
 
 #### **简介**
 
 在OCR翻译结果页显示待翻译原文和翻译结果。
 
-![OCR翻译结果页](pics/OCR_translate_result_UI_image.png)
+<div align="center">
+    <img src="pics/OCR_translate_result_UI_image.png" width="22%">
+</div>
 
 #### **交互场景**
 
@@ -99,13 +120,17 @@
 
 3.用户点击左上角返回按钮返回主界面。
 
+
+
 ### **5.语音翻译页**
 
 #### **简介**
 
 选择输入输出的语言，按住语音按钮说话，显示说话原文和翻译结果。
 
-![语音翻译页](pics/speech_translate_UI_image.png)
+<div align="center">
+    <img src="pics/speech_translate_UI_image.png" width="22%">
+</div>
 
 #### **交互场景**
 
@@ -125,7 +150,9 @@
 
 显示翻译记录。
 
-![翻译记录页](pics/record_UI_image.png)
+<div align="center">
+    <img src="pics/record_UI_image.png" width="22%">
+</div>
 
 #### **交互场景**
 
