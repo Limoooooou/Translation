@@ -87,7 +87,4 @@ dependencies {
 //    implementation("com.google.cloud:google-cloud-translate:2.2.0")
 //    implementation ("com.google.api.grpc:proto-google-common-protos:2.9.0")
 //    //yzh_end
-
-    //lcx
-    //whx
 }
