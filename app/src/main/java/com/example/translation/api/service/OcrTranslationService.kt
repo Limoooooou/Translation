@@ -1,20 +1,21 @@
 package com.example.translation.api.service
 
-import android.view.translation.TranslationResponse
+import com.example.translateapp.api.model.TranslationResponse
 import okhttp3.MultipartBody
-import retrofit2.Response
+import retrofit2.Call
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
+import retrofit2.http.Query
 
 interface OcrTranslationService {
     @Multipart
     @POST("translate/ocr")
-    suspend fun recognizeImage(
+    fun translateImage(
         @Part image: MultipartBody.Part,
-        @Part("source_lang") sourceLang: String,
-        @Part("target_lang") targetLang: String
-    ): Response<TranslationResponse>
+        @Query("sourceLang") sourceLang: String? = null,
+        @Query("targetLang") targetLang: String
+    ): Call<TranslationResponse>
 }
 
 // 数据模型移至 api/model/TranslationResponse.kt

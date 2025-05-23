@@ -1,17 +1,14 @@
 package com.example.translation.local.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.room.*
 import com.example.translation.api.model.TranslationRecord
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TranslationDao {
     @Insert
-    suspend fun saveTranslationRecord(record: TranslationRecord)
+    fun insertRecord(record: TranslationRecord): Long
 
-    // 修正查询语句中的列名（使用 created_at）
-    @Query("SELECT * FROM translation_records WHERE userId = :userId ORDER BY created_at DESC")
-    fun getTranslationRecords(userId: String): Flow<List<TranslationRecord>>
+    @Query("SELECT * FROM translation_history ORDER BY created_at DESC")
+    fun getAllHistory(): Flow<List<TranslationRecord>>
 }
