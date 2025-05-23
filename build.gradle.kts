@@ -4,3 +4,5 @@ plugins {
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
 }
+
+val constraintLayoutVersion by extra ("2.2.0-alpha13")
