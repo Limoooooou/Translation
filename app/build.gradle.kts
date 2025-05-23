@@ -104,4 +104,7 @@ dependencies {
     testImplementation("com.squareup.retrofit2:converter-gson:2.9.0")
     testImplementation("com.squareup.okhttp3:okhttp:4.9.3")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.6.10")
+
+    // Material Icons Extended（包含所有图标）
+    implementation("androidx.compose.material:material-icons-extended:1.6.0")
 }
