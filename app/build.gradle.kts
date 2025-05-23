@@ -1,7 +1,9 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt.android) // 使用版本目录中的别名
+    kotlin("kapt")
+    kotlin("plugin.compose")
 }
 
 android {
@@ -37,14 +39,6 @@ android {
     buildFeatures {
         compose = true
     }
-    composeOptions{
-        kotlinCompilerExtensionVersion="1.5.3"
-    }
-
-    packagingOptions {
-        pickFirst ("META-INF/INDEX.LIST") // 选择第一个遇到的文件
-        pickFirst ("META-INF/DEPENDENCIES")
-    }
 }
 
 dependencies {
@@ -56,10 +50,7 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.constraintlayout)
-    implementation("androidx.constraintlayout:constraintlayout:2.2.0-alpha13")
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.camera.view)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -67,24 +58,50 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-//    implementation ("androidx.activity:activity-compose:1.7.2")
-//    implementation ("androidx.compose.ui:ui:1.5.0")
-//    implementation ("androidx.compose.material3:material3:1.1.1")
-//    implementation ("androidx.compose.ui:ui-tooling-preview:1.5.0")
-//    debugImplementation ("androidx.compose.ui:ui-tooling:1.5.0")
-//
-//    //yzh_start
-//    // 相机X库
-//    implementation("androidx.camera:camera-core:1.3.0")
-//    implementation("androidx.camera:camera-camera2:1.3.0")
-//    implementation("androidx.camera:camera-lifecycle:1.3.0")
-//    implementation("androidx.camera:camera-view:1.3.0")
-//
-//    // ML Kit文字识别（Google官方OCR）
-//    implementation("com.google.mlkit:text-recognition:16.0.0")
-//
-//    // 翻译API（推荐使用Google）
-//    implementation("com.google.cloud:google-cloud-translate:2.2.0")
-//    implementation ("com.google.api.grpc:proto-google-common-protos:2.9.0")
-//    //yzh_end
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+}
+
+dependencies {
+    // Room
+    implementation("androidx.room:room-runtime:2.5.2")
+    kapt("androidx.room:room-compiler:2.5.2")
+    implementation("androidx.room:room-ktx:2.5.2")
+
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    // DataStore
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // Hilt
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.google.dagger:hilt-android:2.46.1")
+    kapt("com.google.dagger:hilt-compiler:2.46.1")
+
+    // Jetpack Navigation Compose
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+
+    // DataStore Preferences
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    // 协程支持
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
+
+    // ViewModel 和 Lifecycle
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+
+    implementation("androidx.compose.runtime:runtime:1.6.0")
+    implementation("androidx.compose.runtime:runtime-livedata:1.6.0")
+
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.9.3")
+    testImplementation("com.squareup.retrofit2:retrofit:2.9.0")
+    testImplementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    testImplementation("com.squareup.okhttp3:okhttp:4.9.3")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.6.10")
 }

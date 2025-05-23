@@ -5,4 +5,10 @@ plugins {
     alias(libs.plugins.kotlin.compose) apply false
 }
 
-val constraintLayoutVersion by extra ("2.2.0-alpha13")
+buildscript {
+    dependencies {
+        // 其他依赖项
+        classpath("com.android.tools.build:gradle:7.4.2")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.22")
+    }
+}
