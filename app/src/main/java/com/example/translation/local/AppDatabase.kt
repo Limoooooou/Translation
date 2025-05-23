@@ -4,13 +4,18 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.example.translation.api.model.TranslationRecord
+import com.example.translation.local.converters.LocalDateTimeConverter
 import com.example.translation.local.dao.TranslationDao
 
 @Database(
-    entities = [TranslationRecord::class],  // 实体类来自 local.entity 包
-    version = 1
+    entities = [TranslationRecord::class],
+    version = 1,
+    exportSchema = false // 关闭 schema 导出（开发时可设为 true）
 )
+@TypeConverters(LocalDateTimeConverter::class)
+
 abstract class AppDatabase : RoomDatabase() {
     abstract fun translationDao(): TranslationDao  // DAO 接口
 
