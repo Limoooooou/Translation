@@ -80,6 +80,10 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.46.1")
     kapt("com.google.dagger:hilt-compiler:2.46.1")
 
+    //OkHttp
+    implementation ("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.9.3")
+
     // Jetpack Navigation Compose
     implementation("androidx.navigation:navigation-compose:2.7.7")
 

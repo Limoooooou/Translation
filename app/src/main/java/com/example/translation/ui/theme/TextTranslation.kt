@@ -16,10 +16,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Translate
+import com.example.translateapp.domain.repository.RealTranslationRepository
+import com.example.translateapp.domain.repository.TranslationRepository
+import com.example.translation.api.model.TranslationRecord
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 
 @Composable
 fun TextTranslationScreen(
-    onNavigate: (String) -> Unit = {} // 导航回调
+    onNavigate: (String) -> Unit = {}, // 导航回调
+    translationRepository: TranslationRepository // 接收翻译仓库
 ) {
     // 状态管理
     var inputText by remember { mutableStateOf("hello world!") }
@@ -31,6 +37,9 @@ fun TextTranslationScreen(
 
     // 可用语言列表
     val languages = listOf("英文", "简体中文", "日语", "法语", "西班牙语")
+
+    // 用于处理协程的LaunchedEffect和CoroutineScope
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -111,9 +120,26 @@ fun TextTranslationScreen(
             Button(
                 onClick = {
                     // 这里调用翻译API
-                    outputText = translateText(inputText,
-                        currentLanguagePair.first,
-                        currentLanguagePair.second)
+                    // 获取当前选择的语言
+                    val (sourceLang, targetLang) = currentLanguagePair
+
+                    // 调用翻译函数
+                    coroutineScope.launch {
+                        try {
+                            // 调用翻译接口
+                            val translatedText = translationRepository.translateText(
+                                text = inputText,
+                                sourceLang = sourceLang,  // 传递源语言
+                                targetLang = targetLang   // 传递目标语言
+                            )
+
+                            // 更新UI显示翻译结果
+                            outputText = translatedText
+                        } catch (e: Exception) {
+                            // 处理错误，例如显示错误提示
+                            outputText = "翻译失败: ${e.message ?: "未知错误"}"
+                        }
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.medium
@@ -190,7 +216,18 @@ fun translateText(text: String, fromLang: String, toLang: String): String {
 @Preview(showBackground = true)
 @Composable
 fun TextTranslationScreenPreview() {
+    val fakeRepository = object : TranslationRepository {
+        override suspend fun translateText(text: String, sourceLang: String, targetLang: String): String {
+            // 模拟翻译结果
+            return "这是翻译结果: $text"
+        }
+
+        override fun getHistory(): Flow<List<TranslationRecord>> {
+            // 返回空列表
+            TODO("Not yet implemented")
+        }
+    }
     MaterialTheme {
-        TextTranslationScreen()
+        TextTranslationScreen(onNavigate = {}, translationRepository = fakeRepository)
     }
 }
