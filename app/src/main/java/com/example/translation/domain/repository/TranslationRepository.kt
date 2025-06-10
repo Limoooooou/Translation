@@ -1,6 +1,5 @@
-package com.example.translateapp.domain.repository
+package com.example.translation.domain.repository
 
-import com.example.translateapp.api.model.TranslationResponse
 import com.example.translation.api.model.TranslationRecord
 import kotlinx.coroutines.flow.Flow
 
@@ -11,5 +10,5 @@ interface TranslationRepository {
         targetLang: String   // 统一为targetLang
     ): String
 
-    fun getHistory(): Flow<List<TranslationRecord>>
+    fun getHistory(): Flow<List<com.example.translation.api.model.TranslationRecord>>
 }

@@ -1,59 +1,45 @@
-package com.example.translateapp.ui.viewmodel
+package com.example.translation.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.translateapp.domain.repository.TranslationRepository
+import com.example.translation.domain.repository.TranslationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import javax.inject.Inject
 
 @HiltViewModel
 class TranslationViewModel @Inject constructor(
-    private val repo: TranslationRepository
+    val repository: TranslationRepository
 ) : ViewModel() {
 
-    // 输入文本（使用 mutableStateOf 直接绑定到 Compose UI）
-    var inputText by mutableStateOf("")
-        private set
+    private var _inputText = mutableStateOf("")
+    val inputText: State<String> get() = _inputText // 暴露为 State<String>
 
-    // 翻译结果（使用 mutableStateOf 直接绑定到 Compose UI）
-    var resultText by mutableStateOf("")
-        private set
+    private var _resultText = mutableStateOf("")
+    val resultText: State<String> get() = _resultText // 暴露为 State<String>
 
-    // 加载状态（使用 StateFlow 管理）
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    private var _isLoading = mutableStateOf(false)
+    val isLoading: State<Boolean> get() = _isLoading // 暴露为 State<Boolean>
 
-    // 错误消息（使用 StateFlow 管理）
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+    private var _errorMessage = mutableStateOf<String?>(null)
+    val errorMessage: State<String?> get() = _errorMessage // 暴露为 State<String?>
 
-    // 更新输入文本
+    // 更新状态的方法
     fun updateInput(text: String) {
-        inputText = text
+        _inputText.value = text // 通过.value修改内部状态
+        _errorMessage.value = null
     }
 
-    // 调用翻译接口
-    fun translateText() {
+    fun translate(text: String, sourceLang: String, targetLang: String) {
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null
-
             try {
-                resultText = repo.translateText(
-                    text = inputText,
-                    sourceLang = "auto", // 实际应从 LanguageSettingsManager 获取
-                    targetLang = "en"    // 实际应从 LanguageSettingsManager 获取
-                )
+                _resultText.value = repository.translateText(text, sourceLang, targetLang)
             } catch (e: Exception) {
                 _errorMessage.value = "翻译失败: ${e.message}"
-                resultText = ""
             } finally {
                 _isLoading.value = false
             }

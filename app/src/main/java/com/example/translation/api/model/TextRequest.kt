@@ -1,4 +1,4 @@
-package com.example.translateapp.api.model
+package com.example.translation.api.model
 
 import com.google.gson.annotations.SerializedName
 
@@ -10,5 +10,14 @@ data class TextRequest(
     val sourceLang: String,
 
     @SerializedName("target_lang")
-    val targetLang: String
+    val targetLang: String,
+
+    @SerializedName("appid")
+    val appId: String,
+
+    @SerializedName("salt")
+    val salt: String,
+
+    @SerializedName("sign")
+    val sign: String
 )

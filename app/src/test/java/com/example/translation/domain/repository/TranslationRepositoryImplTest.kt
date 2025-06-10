@@ -1,7 +1,7 @@
 package com.example.translateapp.domain.repository
 
-import com.example.translateapp.api.model.TextRequest
-import com.example.translateapp.api.model.TranslationResponse
+import com.example.translation.api.model.TextRequest
+import com.example.translation.api.model.TranslationResponse
 import com.example.translateapp.data.repository.TranslationRepositoryImpl
 import com.example.translation.api.model.TranslationRecord
 import com.example.translation.api.service.TextTranslationService

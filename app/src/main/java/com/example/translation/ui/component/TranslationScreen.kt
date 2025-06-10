@@ -11,32 +11,36 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.translateapp.ui.viewmodel.TranslationViewModel
+import com.example.translation.ui.viewmodel.TranslationViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TranslationScreen(viewModel: TranslationViewModel) {
-    val inputText by remember { mutableStateOf(viewModel.inputText) }
-    val resultText by remember { mutableStateOf(viewModel.resultText) }
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+fun TranslationScreen(
+    viewModel: TranslationViewModel,
+    modifier: Modifier = Modifier
+) {
+    val inputText by viewModel.inputText
+    val resultText by viewModel.resultText
+    val isLoading by viewModel.isLoading
+    val errorMessage by viewModel.errorMessage
+
     val focusManager = LocalFocusManager.current
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // 输入区域
+        // 输入框：绑定 ViewModel 的 inputText，并通过 updateInput 方法更新
         OutlinedTextField(
             value = inputText,
-            onValueChange = viewModel::updateInput,
+            onValueChange = { viewModel.updateInput(it) },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("输入要翻译的文本") },
             trailingIcon = {
-                if (inputText.isNotEmpty()) {
-                    IconButton(onClick = { viewModel.updateInput("") }) {
+                if (inputText.isNotEmpty()) { // 使用 inputText 替代 uiState.inputText
+                    IconButton(onClick = { viewModel.updateInput("") }) { // 调用 updateInput 清空
                         Icon(Icons.Default.Clear, "清空")
                     }
                 }
@@ -45,21 +49,21 @@ fun TranslationScreen(viewModel: TranslationViewModel) {
             keyboardActions = KeyboardActions(
                 onDone = {
                     focusManager.clearFocus()
-                    viewModel.translateText()
+                    viewModel.translate(inputText, "en", "zh") // 直接调用 translate 方法（需传入语言参数）
                 }
             ),
             maxLines = 5
         )
 
-        // 翻译按钮
+        // 翻译按钮：触发 translate 方法，使用独立状态控制禁用
         Button(
-            onClick = viewModel::translateText,
+            onClick = { viewModel.translate(inputText, "en", "zh") }, // 示例语言代码，需从界面获取实际语言
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
             enabled = inputText.isNotEmpty() && !isLoading
         ) {
-            if (isLoading) {
+            if (isLoading) { // 使用 isLoading 替代 uiState.isLoading
                 CircularProgressIndicator(
                     modifier = Modifier.size(24.dp),
                     color = MaterialTheme.colorScheme.onPrimary
@@ -69,8 +73,8 @@ fun TranslationScreen(viewModel: TranslationViewModel) {
             }
         }
 
-        // 错误提示
-        errorMessage?.let { message ->
+        // 错误信息：使用独立状态 errorMessage
+        errorMessage?.let { message -> // 替代 uiState.errorMessage
             Text(
                 text = message,
                 color = MaterialTheme.colorScheme.error,
@@ -78,8 +82,8 @@ fun TranslationScreen(viewModel: TranslationViewModel) {
             )
         }
 
-        // 翻译结果
-        if (resultText.isNotEmpty()) {
+        // 翻译结果：使用独立状态 resultText
+        if (resultText.isNotEmpty()) { // 替代 uiState.resultText
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -96,7 +100,7 @@ fun TranslationScreen(viewModel: TranslationViewModel) {
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = resultText,
+                        text = resultText, // 直接使用 resultText
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }

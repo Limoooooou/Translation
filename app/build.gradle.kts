@@ -6,6 +6,11 @@ plugins {
     kotlin("plugin.compose")
 }
 
+repositories {
+    google()
+    mavenCentral()
+}
+
 android {
     namespace = "com.example.translation"
     compileSdk = 35
@@ -35,6 +40,8 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
+        languageVersion = "1.9"
+        apiVersion = "1.9"
     }
     buildFeatures {
         compose = true
@@ -58,15 +65,15 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
+   // implementation(libs.hilt.android)
+  //  kapt(libs.hilt.compiler)
 }
 
 dependencies {
     // Room
-    implementation("androidx.room:room-runtime:2.5.2")
-    kapt("androidx.room:room-compiler:2.5.2")
-    implementation("androidx.room:room-ktx:2.5.2")
+    implementation("androidx.room:room-runtime:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
 
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -77,8 +84,9 @@ dependencies {
 
     // Hilt
     implementation("com.google.code.gson:gson:2.10.1")
-    implementation("com.google.dagger:hilt-android:2.46.1")
-    kapt("com.google.dagger:hilt-compiler:2.46.1")
+    implementation("com.google.dagger:hilt-android:2.48.1")
+    kapt("com.google.dagger:hilt-compiler:2.48.1")
+    implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
 
     //OkHttp
     implementation ("com.squareup.okhttp3:okhttp:4.9.3")
@@ -89,6 +97,7 @@ dependencies {
 
     // DataStore Preferences
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+
     // 协程支持
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
@@ -101,7 +110,7 @@ dependencies {
     implementation("androidx.compose.runtime:runtime-livedata:1.6.0")
 
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1")
     testImplementation("io.mockk:mockk:1.13.8")
     testImplementation("com.squareup.okhttp3:mockwebserver:4.9.3")
     testImplementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -111,4 +120,6 @@ dependencies {
 
     // Material Icons Extended（包含所有图标）
     implementation("androidx.compose.material:material-icons-extended:1.6.0")
+
+    implementation("androidx.activity:activity-compose:1.9.0")
 }

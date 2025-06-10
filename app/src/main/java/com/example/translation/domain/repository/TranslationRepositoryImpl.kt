@@ -1,42 +1,49 @@
-package com.example.translateapp.data.repository
+package com.example.translation.domain.repository
 
-import com.example.translateapp.api.model.TextRequest
-import com.example.translateapp.domain.repository.TranslationRepository
-import com.example.translation.api.model.TranslationRecord
+import com.example.translation.api.model.TextRequest
 import com.example.translation.api.service.TextTranslationService
-import com.example.translation.local.dao.TranslationDao
-import kotlinx.coroutines.flow.Flow
+import com.example.translation.util.BaiduSignUtil
 import java.io.IOException
 import javax.inject.Inject
-import javax.inject.Singleton
+import javax.inject.Named
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
-@Singleton
 class TranslationRepositoryImpl @Inject constructor(
-    private val remote: TextTranslationService,
-    private val local: TranslationDao
+    private val service: TextTranslationService,
+    @Named("appId")private val appId: String,
+    @Named("secretKey")private val secretKey: String
 ) : TranslationRepository {
 
     override suspend fun translateText(
         text: String,
-        srcLang: String,
-        tgtLang: String
+        sourceLang: String,
+        targetLang: String
     ): String {
-        val response = remote.translateText(TextRequest(text, srcLang, tgtLang))
-        val translatedText = response.body()?.translatedText ?: throw IOException("Translation failed")
+        val salt = System.currentTimeMillis().toString()
+        val sign = BaiduSignUtil.generateSign(appId, text, salt, secretKey)
 
-        val recordId = local.insertRecord(
-            TranslationRecord(
-                sourceText = text,
-                sourceLanguage = srcLang,
-                targetText = translatedText,
-                targetLanguage = tgtLang
+        val response = service.translateText(
+            TextRequest(
+                text = text,
+                sourceLang = sourceLang,
+                targetLang = targetLang,
+                appId = appId,
+                salt = salt,
+                sign = sign
             )
         )
 
-        return translatedText
+        if (!response.isSuccessful) {
+            throw IOException("API error: ${response.code()}")
+        }
+
+        return response.body()?.transResult?.firstOrNull()?.dst
+            ?: throw IOException("Empty translation result")
     }
 
-    override fun getHistory(): Flow<List<TranslationRecord>> {
-        return local.getAllHistory()
+    override fun getHistory(): Flow<List<com.example.translation.api.model.TranslationRecord>> {
+        // 暂时返回空流，需根据实际数据库实现
+        return flowOf(emptyList())
     }
 }

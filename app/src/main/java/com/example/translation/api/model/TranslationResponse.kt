@@ -1,14 +1,14 @@
-package com.example.translateapp.api.model
+package com.example.translation.api.model
 
 import com.google.gson.annotations.SerializedName
 
 data class TranslationResponse(
-    @SerializedName("translated_text")
-    val translatedText: String,
-    @SerializedName("sourceLang")
-    val sourceLang: String = "",
-    @SerializedName("targetLang")
-    val targetLang: String = "",
-    @SerializedName("detectedLanguage")
-    val detectedLanguage: String? = null
+    @SerializedName("from") val sourceLang: String,
+    @SerializedName("to") val targetLang: String,
+    @SerializedName("trans_result") val transResult: List<TransResult>
+)
+
+data class TransResult(
+    @SerializedName("src") val src: String,
+    @SerializedName("dst") val dst: String
 )
