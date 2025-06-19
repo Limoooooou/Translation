@@ -2,4 +2,6 @@
     <string name="app_name">Translation</string>
     <string name="translation_history">翻译历史</string>
     <string name="no_history">暂无翻译历史记录</string>
+    <string name="clear_history">清空历史</string>
+    <string name="deleteRecord">删除记录</string>
 </resources>

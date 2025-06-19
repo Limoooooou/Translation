@@ -3,13 +3,13 @@ package com.example.translation.api.model
 import com.google.gson.annotations.SerializedName
 
 data class TextRequest(
-    @SerializedName("text")
+    @SerializedName("q")
     val text: String,
 
-    @SerializedName("source_lang")
+    @SerializedName("from")
     val sourceLang: String,
 
-    @SerializedName("target_lang")
+    @SerializedName("to")
     val targetLang: String,
 
     @SerializedName("appid")

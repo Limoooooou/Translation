@@ -1,6 +1,6 @@
 package com.example.translation.api.service
 
-import com.example.translation.api.model.TranslationResponse
+import com.example.translation.api.TranslationResponse
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.http.Multipart

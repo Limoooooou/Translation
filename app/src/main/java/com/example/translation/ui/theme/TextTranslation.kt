@@ -1,192 +1,437 @@
 package com.example.translation.ui.theme
 
+import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.translation.api.model.TranslationRecord
-import com.example.translation.domain.repository.TranslationRepository
-import com.example.translation.ui.viewmodel.TranslationViewModel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
-import com.example.translation.util.LanguageMapper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Locale
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TextTranslationScreen(
     navController: NavHostController,
-    viewModel: TranslationViewModel = hiltViewModel()
+    modifier: Modifier = Modifier,
 ) {
-    var showLanguageDialog by remember { mutableStateOf(false) }
-    var currentLanguagePair by remember { mutableStateOf("英文" to "简体中文") }
+    val historyViewModel = remember { TranslationHistoryViewModel() }
 
-    val isLoading by viewModel.isLoading
-    val errorMessage by viewModel.errorMessage
-    val resultText by viewModel.resultText
-    val inputText by viewModel.inputText
+    var sourceLanguageIndex by remember { mutableIntStateOf(0) } // 默认选择中文
+    var targetLanguageIndex by remember { mutableIntStateOf(1) } // 默认选择英文
+    var inputText by remember { mutableStateOf("") }
+    var translatedText by remember { mutableStateOf("") }
+    var isTranslating by remember { mutableStateOf(false) }
+    var isPlayingSource by remember { mutableStateOf(false) }
+    var isPlayingTarget by remember { mutableStateOf(false) }
+    var copySuccess by remember { mutableStateOf(false) }
 
-    val languages = listOf("英文", "简体中文", "日语", "法语", "西班牙语")
+    val supportedLanguages = listOf("中文", "英文", "日文", "韩文", "德语")
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.SpaceBetween
+    // 获取系统服务
+    val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
+
+    val languageCodeMap = mapOf(
+        "中文" to "zh",
+        "英文" to "en",
+        "日文" to "jp",
+        "韩文" to "kor",
+        "德语" to "de"
+    )
+
+    /**
+     * 百度云通用文本翻译
+     */
+    fun generalTextTranslation(
+        coroutineScope: CoroutineScope,
+        text: String,
+        sourceLanguageText: String = "auto",
+        targetLanguageText: String = "英文",
+        onSuccess: (String) -> Unit,
+        onError: (String) -> Unit
     ) {
-        Column {
-            Text("Translate", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(bottom = 24.dp))
-
-            // 输入语言行
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("输入", style = MaterialTheme.typography.bodyLarge)
-                OutlinedButton(onClick = { showLanguageDialog = true }, modifier = Modifier.width(100.dp)) {
-                    Text(currentLanguagePair.first)
-                }
-            }
-
-            // 输入文本框：绑定 ViewModel 的 inputText 状态
-            BasicTextField(
-                value = inputText, // 直接使用 viewModel.inputText
-                onValueChange = { viewModel.updateInput(it) }, // 通过 ViewModel 方法更新状态
-                modifier = Modifier.fillMaxWidth()
-                    .padding(vertical = 8.dp)
-                    .background(Color.LightGray, MaterialTheme.shapes.small)
-                    .padding(16.dp),
-                textStyle = TextStyle(fontSize = 16.sp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // 输出语言行（同输入语言逻辑）
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("输出", style = MaterialTheme.typography.bodyLarge)
-                OutlinedButton(onClick = { showLanguageDialog = true }, modifier = Modifier.width(100.dp)) {
-                    Text(currentLanguagePair.second)
-                }
-            }
-
-            // 输出文本框
-            Box(Modifier.fillMaxWidth().background(Color.LightGray, MaterialTheme.shapes.small).padding(16.dp)) {
-                Text(resultText.ifEmpty { "翻译结果将显示在这里" }, fontSize = 16.sp)
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // 翻译按钮：触发 ViewModel 的 translate 方法（已处理协程）
-            Button(
-                onClick = {
-                    val sourceLang = LanguageMapper.getBaiduLanguageCode(currentLanguagePair.first)
-                    val targetLang = LanguageMapper.getBaiduLanguageCode(currentLanguagePair.second)
-
-                    viewModel.translate(inputText, sourceLang, targetLang) // 直接调用 ViewModel 方法
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium,
-                enabled = !isLoading // 根据 ViewModel 的 isLoading 状态禁用按钮
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
-                } else {
-                    Text("Translate", style = MaterialTheme.typography.labelLarge)
-                }
-            }
-
-            // 错误信息显示
-            errorMessage?.let {
-                Text(
-                    text = it,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(top = 16.dp)
+        coroutineScope.launch(Dispatchers.IO) {
+            try {
+                // 语言代码列表
+                val languageCodeMap = mapOf(
+                    "中文" to "zh",
+                    "英文" to "en",
+                    "日文" to "jp",
+                    "韩文" to "kor",
+                    "德语" to "de"
                 )
+
+                val sourceLanguageCode = languageCodeMap[sourceLanguageText] ?: "auto"
+                val targetLanguageCode = languageCodeMap[targetLanguageText] ?: "en"
+
+                // 调用翻译API
+                val result = BaiduTranslationApi.translateText(text, sourceLanguageCode, targetLanguageCode)
+
+                withContext(Dispatchers.Main) {
+                    onSuccess(result)
+
+                    // 保存翻译记录
+                    val record = com.example.translation.api.model.TranslationRecord(
+                        sourceText = text,
+                        sourceLanguage = sourceLanguageText,
+                        targetText = result,
+                        targetLanguage = targetLanguageText
+                    )
+                    historyViewModel.addRecord(record)
+                    Log.d("Translation", "Record saved: ${record.sourceText} -> ${record.targetText}")
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    onError(e.message ?: "未知错误")
+                    Log.e("Translation", "Save record error: ${e.message}")
+                }
             }
         }
     }
 
-    // 语言选择对话框（优化为输入/输出语言独立选择）
-    if (showLanguageDialog) {
-        AlertDialog(
-            onDismissRequest = { showLanguageDialog = false },
-            title = { Text("选择语言") },
-            text = {
-                Column {
-                    // 输入语言选择
-                    Text("输入语言", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(bottom = 8.dp))
-                    languages.forEach { lang ->
-                        Button(
-                            onClick = {
-                                currentLanguagePair = lang to currentLanguagePair.second
-                                showLanguageDialog = false
-                            },
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+    fun speakText(text: String, language: String) {
+        if (text.isBlank()) return
+
+        // 从映射表获取语言代码字符串
+        val languageCode = languageCodeMap[language] ?: "en"
+
+        // 将语言代码字符串转换为Locale
+        val locale = Locale.forLanguageTag(languageCode)
+    }
+
+    /**
+     * 复制文本到剪贴板
+     */
+    fun copyToClipboard(text: String) {
+        if (text.isBlank()) return
+
+        clipboardManager.setText(AnnotatedString(text))
+        copySuccess = true
+
+        // 3秒后隐藏复制成功提示
+        CoroutineScope(Dispatchers.Main).launch {
+            kotlinx.coroutines.delay(3000)
+            copySuccess = false
+        }
+    }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("文本翻译") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.primary
+                ),
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // 源语言选择
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(text = "源语言:", modifier = Modifier.padding(bottom = 4.dp))
+                LanguageDropdownSelector(
+                    selectedLanguage = supportedLanguages[sourceLanguageIndex],
+                    onLanguageSelected = { index -> sourceLanguageIndex = index },
+                    allLanguages = supportedLanguages
+                )
+            }
+
+            // 输入文本区域
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(text = "请输入要翻译的内容:", modifier = Modifier.padding(bottom = 4.dp))
+
+                // 文本输入框和功能按钮
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant,
+                            MaterialTheme.shapes.small
+                        )
+                ) {
+                    Column {
+                        TextField(
+                            value = inputText,
+                            onValueChange = { inputText = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("请输入文本...") },
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                                unfocusedIndicatorColor = Color.Transparent
+                            )
+                        )
+
+                        // 功能按钮：语音播放和复制
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.End
                         ) {
-                            Text(lang)
+                            IconButton(
+                                onClick = {
+                                    speakText(
+                                        inputText,
+                                        supportedLanguages[sourceLanguageIndex]
+                                    )
+                                },
+                                enabled = inputText.isNotEmpty()
+                            ) {
+                                Icon(
+                                    Icons.Filled.VolumeUp,
+                                    contentDescription = "播放",
+                                    tint = if (isPlayingSource) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+
+                            IconButton(
+                                onClick = { copyToClipboard(inputText) },
+                                enabled = inputText.isNotEmpty()
+                            ) {
+                                Icon(
+                                    Icons.Filled.ContentCopy,
+                                    contentDescription = "复制",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // 输出语言选择
-                    Text("输出语言", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(bottom = 8.dp))
-                    languages.forEach { lang ->
-                        Button(
-                            onClick = {
-                                currentLanguagePair = currentLanguagePair.first to lang
-                                showLanguageDialog = false
-                            },
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
-                        ) {
-                            Text(lang)
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showLanguageDialog = false }) {
-                    Text("取消")
                 }
             }
-        )
+
+            // 目标语言选择
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(text = "目标翻译的语言:", modifier = Modifier.padding(bottom = 4.dp))
+                LanguageDropdownSelector(
+                    selectedLanguage = supportedLanguages[targetLanguageIndex],
+                    onLanguageSelected = { index -> targetLanguageIndex = index },
+                    allLanguages = supportedLanguages
+                )
+            }
+
+            // 翻译结果区域
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(text = "翻译结果:", modifier = Modifier.padding(bottom = 4.dp))
+
+                // 结果显示框和功能按钮
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant,
+                            MaterialTheme.shapes.small
+                        )
+                ) {
+                    Column {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            if (translatedText.isEmpty()) {
+                                Text(
+                                    text = "翻译结果将显示在这里",
+                                    fontSize = 16.sp,
+                                    color = Color.Gray
+                                )
+                            } else {
+                                Text(
+                                    text = translatedText,
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
+
+                        // 功能按钮：语音播放和复制
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    speakText(
+                                        translatedText,
+                                        supportedLanguages[targetLanguageIndex]
+                                    )
+                                },
+                                enabled = translatedText.isNotEmpty()
+                            ) {
+                                Icon(
+                                    Icons.Filled.VolumeUp,
+                                    contentDescription = "播放",
+                                    tint = if (isPlayingTarget) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+
+                            IconButton(
+                                onClick = { copyToClipboard(translatedText) },
+                                enabled = translatedText.isNotEmpty()
+                            ) {
+                                Icon(
+                                    Icons.Filled.ContentCopy,
+                                    contentDescription = "复制",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 复制成功提示
+            if (copySuccess) {
+                Text(
+                    text = "已复制到剪贴板",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.primary, MaterialTheme.shapes.small)
+                        .padding(8.dp),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 14.sp
+                )
+            }
+
+            // 翻译按钮
+            val coroutineScope = rememberCoroutineScope()
+            Button(
+                onClick = {
+                    if (inputText.isNotEmpty() && !isTranslating) {
+                        isTranslating = true
+                        generalTextTranslation(
+                            coroutineScope = coroutineScope,
+                            text = inputText,
+                            sourceLanguageText = supportedLanguages[sourceLanguageIndex],
+                            targetLanguageText = supportedLanguages[targetLanguageIndex],
+                            onSuccess = { result ->
+                                translatedText = result
+                                isTranslating = false
+                            },
+                            onError = { error ->
+                                translatedText = "翻译出错: $error"
+                                isTranslating = false
+                            }
+                        )
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                enabled = !isTranslating && inputText.isNotEmpty()
+            ) {
+                if (isTranslating) {
+                    Text("翻译中...", fontSize = 18.sp)
+                } else {
+                    Text("翻译", fontSize = 18.sp)
+                }
+            }
+        }
     }
 }
 
-// 工具函数：语言映射（与 ViewModel 逻辑一致）
-fun getLanguageCode(displayLanguage: String): String {
-    return when (displayLanguage) {
-        "英文" -> "en"
-        "简体中文" -> "zh"
-        "日语" -> "ja"
-        "法语" -> "fr"
-        "西班牙语" -> "es"
-        else -> "en"
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LanguageDropdownSelector(
+    selectedLanguage: String,
+    onLanguageSelected: (Int) -> Unit,
+    allLanguages: List<String>
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(modifier = Modifier.fillMaxWidth()) {
+        TextField(
+            value = selectedLanguage,
+            onValueChange = {},
+            readOnly = true,
+            modifier = Modifier.fillMaxWidth(),
+            trailingIcon = {
+                IconButton(onClick = { expanded = true }) {
+                    Icon(
+                        Icons.Filled.ArrowDropDown,
+                        contentDescription = "展开语言选择"
+                    )
+                }
+            }
+        )
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            allLanguages.forEachIndexed { index, language ->
+                DropdownMenuItem(
+                    text = { Text(text = language) },
+                    onClick = {
+                        onLanguageSelected(index)
+                        expanded = false
+                    }
+                )
+            }
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun TextTranslationScreenPreview() {
-    val fakeRepository = object : TranslationRepository {
-        override suspend fun translateText(text: String, sourceLang: String, targetLang: String): String {
-            return "预览翻译结果：$text"
-        }
-
-        override fun getHistory(): Flow<List<TranslationRecord>> {
-            return flowOf(emptyList())
-        }
-    }
+fun PreviewTextTranslationScreen() {
     val navController = rememberNavController()
-    MaterialTheme {
-        TextTranslationScreen(
-            viewModel = TranslationViewModel(fakeRepository), // 注意：实际需通过 Hilt 注入，此处仅为预览模拟
-            navController = navController
-        )
+    TranslationTheme {
+        TextTranslationScreen(navController)
     }
 }

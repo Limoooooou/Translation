@@ -1,5 +1,6 @@
 package com.example.translation.navigation
 
+import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -13,16 +14,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.translation.domain.repository.TranslationRepository
-import com.example.translation.ui.theme.TextTranslationScreen
+import androidx.navigation.navArgument
 import com.example.translation.ui.theme.TranslationHistoryScreen
 import com.example.translation.ui.theme.VoiceTranslationScreen
 import com.example.translation.ui.theme.CameraTranslationScreen
-import com.example.translation.ui.viewmodel.TranslationViewModel
+import com.example.translation.ui.theme.TextTranslationScreen
+import com.example.translation.ui.theme.TranslationResultScreen
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
     object TextTranslationScreen : Screen("textScreen", "文本翻译", Icons.Default.Keyboard)
@@ -32,9 +34,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
 }
 
 @Composable
-fun MainNavigation(
-    translationRepository: TranslationRepository = hiltViewModel<TranslationViewModel>().repository
-) {
+fun MainNavigation() {
     val navController = rememberNavController()
 
     Scaffold(
@@ -42,13 +42,12 @@ fun MainNavigation(
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.VoiceTranslationScreen.route,
+            startDestination = Screen.TextTranslationScreen.route,
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.TextTranslationScreen.route) {
                 TextTranslationScreen(
-                    navController = navController,
-                    viewModel = hiltViewModel()
+                    navController = navController
                 )
             }
             composable(Screen.CameraTranslationScreen.route) {
@@ -59,6 +58,16 @@ fun MainNavigation(
             }
             composable(Screen.HistoryScreen.route) {
                 TranslationHistoryScreen(navController)
+            }
+            composable(
+                "translationResultScreen?result={result}",
+                arguments = listOf(
+                    navArgument("result") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val result = backStackEntry.arguments?.getString("result") ?: "翻译结果为空"
+                Log.d("TranslationResult", "Received result: $result")
+                TranslationResultScreen(navController, result)
             }
         }
     }

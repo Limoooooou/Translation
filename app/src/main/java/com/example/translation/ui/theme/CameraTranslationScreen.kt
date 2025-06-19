@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.provider.MediaStore
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -26,6 +27,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.translation.api.BaiduImageTranslationApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -40,6 +42,7 @@ fun CameraTranslationScreen(
     var isLoading by remember { mutableStateOf(false) }
     var sourceLanguage by remember { mutableStateOf("auto") }
     var targetLanguage by remember { mutableStateOf("zh") }
+    var translationResult by remember { mutableStateOf("") }
     var showSourceLanguageDialog by remember { mutableStateOf(false) }
     var showTargetLanguageDialog by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
@@ -201,13 +204,28 @@ fun CameraTranslationScreen(
                     // 翻译按钮
                     Button(
                         onClick = {
-                            coroutineScope.launch {
-                                isLoading = true
+                            if (capturedImage != null) {
+                                coroutineScope.launch {
+                                    isLoading = true
 
-                                // 导航到翻译结果页面，并传递翻译结果
-                                navController.navigate("translationResultScreen?originalText=${"Hello, World!"}&translatedText=${"你好，世界！"}")
+                                    // 调用图片翻译API
+                                    val result = try {
+                                        BaiduImageTranslationApi.translateImage(
+                                            bitmap = capturedImage!!,
+                                            from = sourceLanguage,
+                                            to = targetLanguage
+                                        )
+                                    } catch (e: Exception) {
+                                        "翻译错误: ${e.message ?: "未知错误"}"
+                                    }
+                                    Log.d("CameraTranslation", "Translation result: $result")
 
-                                isLoading = false
+                                    // 保存结果并导航到结果页
+                                    withContext(Dispatchers.Main) {
+                                        navController.navigate("translationResultScreen?result=$result")
+                                    }
+                                    isLoading = false
+                                }
                             }
                         },
                         modifier = Modifier

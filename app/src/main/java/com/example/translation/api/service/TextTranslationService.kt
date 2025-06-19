@@ -1,7 +1,7 @@
 package com.example.translation.api.service
 
 import com.example.translation.api.model.TextRequest
-import com.example.translation.api.model.TranslationResponse
+import com.example.translation.api.TranslationResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
